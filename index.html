@@ -249,8 +249,24 @@ async function fetchTopic(topic, apiKey) {
     const start = jsonText.indexOf('{');
     const end = jsonText.lastIndexOf('}');
     if (start !== -1 && end !== -1) jsonText = jsonText.slice(start, end+1);
-    const parsed = JSON.parse(jsonText);
-    return parsed.articles || [];
+   try {
+  const parsed = JSON.parse(jsonText);
+  return parsed.articles || [];
+} catch(e) {
+  const matches = jsonText.match(/"headline"\s*:\s*"([^"]+)"|"body"\s*:\s*"([^"]+)"|"source"\s*:\s*"([^"]+)"|"region"\s*:\s*"([^"]+)"/g);
+  if (!matches) return [];
+  const articles = [];
+  for (let i = 0; i < matches.length; i += 4) {
+    const get = (m) => m ? m.replace(/^"[^"]+"\s*:\s*"/, '').replace(/"$/, '') : '';
+    articles.push({
+      headline: get(matches[i]),
+      body: get(matches[i+1]),
+      source: get(matches[i+2]),
+      region: get(matches[i+3])
+    });
+  }
+  return articles;
+}
   } catch(err) {
     console.error(`Error fetching ${topic.id}:`, err);
     return [];
