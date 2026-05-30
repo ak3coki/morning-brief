@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morning Brief</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0d;
+    --paper: #f5f0e8;
+    --cream: #ede8dc;
+    --rule: #c8bfaa;
+    --accent: #b5360a;
+    --muted: #7a7063;
+    --tag-bg: #e8e0d0;
+    --card-bg: #faf7f2;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
+  .masthead { border-bottom: 3px double var(--rule); padding: 28px 48px 20px; display: flex; justify-content: space-between; align-items: flex-end; background: var(--paper); }
+  .masthead-left .title { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: -1px; line-height: 1; color: var(--ink); }
+  .masthead-left .subtitle { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .masthead-right { text-align: right; }
+  .date-display { font-family: 'Playfair Display', serif; font-size: 13px; font-style: italic; color: var(--muted); }
+  .refresh-btn { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: var(--paper); border: none; padding: 8px 18px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .refresh-btn:hover { background: var(--accent); }
+  .refresh-btn:disabled { background: var(--rule); cursor: not-allowed; }
+  .refresh-btn .spinner { display: none; width: 10px; height: 10px; border: 1.5px solid var(--paper); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .refresh-btn.loading .spinner { display: block; }
+  .refresh-btn.loading .btn-text { opacity: 0.6; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .topics-bar { border-bottom: 1px solid var(--rule); padding: 10px 48px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; background: var(--cream); }
+  .topics-bar span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+  .topic-pill { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; background: var(--tag-bg); color: var(--ink); border-radius: 2px; cursor: pointer; transition: all 0.15s; border: 1.5px solid transparent; user-select: none; }
+  .topic-pill:hover { border-color: var(--rule); }
+  .topic-pill.active { background: var(--ink); color: var(--paper); }
+  .status-bar { padding: 8px 48px; background: var(--cream); border-bottom: 1px solid var(--rule); font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--rule); margin-right: 6px; vertical-align: middle; }
+  .status-dot.live { background: #4caf50; animation: pulse 2s ease-in-out infinite; }
+  .status-dot.error { background: var(--accent); }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .content { padding: 36px 48px 60px; max-width: 1400px; margin: 0 auto; }
+  .section { margin-bottom: 48px; display: none; animation: fadeIn 0.4s ease; }
+  .section.visible { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; letter-spacing: -0.3px; }
+  .section-icon { font-size: 16px; }
+  .section-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-left: auto; }
+  .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .news-card { background: var(--card-bg); border: 1px solid var(--rule); padding: 22px 24px; position: relative; transition: all 0.2s; }
+  .news-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: #b0a892; }
+  .news-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--rule); transition: background 0.2s; }
+  .news-card:hover::before { background: var(--accent); }
+  .card-topic { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+  .card-headline { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 10px; color: var(--ink); }
+  .card-body { font-size: 13px; line-height: 1.65; color: #3d3830; font-weight: 300; }
+  .card-source { margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--cream); padding-top: 10px; }
+  .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+  .skeleton-card { background: var(--card-bg); border: 1px solid var(--rule); padding: 22px 24px; height: 180px; }
+  .skeleton-line { background: linear-gradient(90deg, var(--cream) 25%, var(--rule) 50%, var(--cream) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 2px; margin-bottom: 10px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .empty-state .big-text { font-family: 'Playfair Display', serif; font-size: 32px; font-style: italic; margin-bottom: 12px; opacity: 0.5; }
+  .welcome { text-align: center; padding: 80px 20px; }
+  .welcome .big-serif { font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic; color: var(--muted); margin-bottom: 16px; }
+  .welcome p { font-size: 14px; color: var(--muted); max-width: 400px; margin: 0 auto 28px; line-height: 1.6; }
+  .welcome-btn { background: var(--ink); color: var(--paper); border: none; padding: 12px 32px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+  .welcome-btn:hover { background: var(--accent); }
+  .footer { border-top: 3px double var(--rule); padding: 16px 48px; display: flex; justify-content: space-between; align-items: center; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
+  @media (max-width: 768px) {
+    .masthead { padding: 20px 20px 16px; flex-direction: column; gap: 12px; align-items: flex-start; }
+    .masthead-left .title { font-size: 36px; }
+    .masthead-right { text-align: left; }
+    .topics-bar, .status-bar, .content, .footer { padding-left: 20px; padding-right: 20px; }
+    .cards-grid, .skeleton-grid { grid-template-columns: 1fr; }
+  }
+  .error-card { background: #fff8f6; border: 1px solid #e8c4b8; border-left: 3px solid var(--accent); padding: 16px 20px; font-size: 13px; color: #6b2d1a; grid-column: 1 / -1; }
+  .api-key-banner { background: var(--accent); color: var(--paper); padding: 12px 48px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; }
+  .api-key-banner input { flex: 1; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: var(--paper); padding: 6px 10px; font-family: 'DM Mono', monospace; font-size: 11px; outline: none; }
+  .api-key-banner input::placeholder { color: rgba(255,255,255,0.5); }
+  .api-key-banner button { background: var(--paper); color: var(--accent); border: none; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; cursor: pointer; font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="api-key-banner" id="api-banner">
+  <span>🔑 CLÉ API —</span>
+  <input type="password" id="api-key-input" placeholder="sk-ant-api03-..." />
+  <button onclick="saveKey()">Sauvegarder</button>
+  <span id="key-status"></span>
+</div>
+
+<header class="masthead">
+  <div class="masthead-left">
+    <div class="title">Morning Brief</div>
+    <div class="subtitle">Your curated intelligence digest</div>
+  </div>
+  <div class="masthead-right">
+    <div class="date-display" id="date-display"></div>
+    <button class="refresh-btn" id="refresh-btn" onclick="fetchAllNews()">
+      <div class="spinner"></div>
+      <span class="btn-text">↻ &nbsp;Fetch Today's Brief</span>
+    </button>
+  </div>
+</header>
+
+<nav class="topics-bar">
+  <span>Filter —</span>
+  <div class="topic-pill active" data-topic="all" onclick="filterTopic('all')">All</div>
+  <div class="topic-pill" data-topic="finance" onclick="filterTopic('finance')">📈 Finance</div>
+  <div class="topic-pill" data-topic="tech" onclick="filterTopic('tech')">🤖 Tech & AI</div>
+  <div class="topic-pill" data-topic="space" onclick="filterTopic('space')">🚀 Space & Science</div>
+  <div class="topic-pill" data-topic="geopolitics" onclick="filterTopic('geopolitics')">🌍 Géopolitique</div>
+  <div class="topic-pill" data-topic="pokemon" onclick="filterTopic('pokemon')">⚡ Pokémon TCG</div>
+  <div class="topic-pill" data-topic="tennis" onclick="filterTopic('tennis')">🎾 Tennis</div>
+</nav>
+
+<div class="status-bar">
+  <div>
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Prêt — entre ta clé API puis clique sur "Fetch Today's Brief"</span>
+  </div>
+  <div id="last-updated"></div>
+</div>
+
+<main class="content" id="main-content">
+  <div class="welcome" id="welcome-state">
+    <div class="big-serif">"Stay informed, stay ahead."</div>
+    <p>Entre ta clé API Anthropic dans la bannière rouge en haut, puis lance ton brief.</p>
+    <button class="welcome-btn" onclick="fetchAllNews()">Charger mon brief →</button>
+  </div>
+</main>
+
+<footer class="footer">
+  <span>Morning Brief · Powered by Claude</span>
+  <span>Sources mondiales · Résumés en français</span>
+</footer>
+
+<script>
+const TOPICS = [
+  { id: 'finance', label: 'Finance & Marchés', icon: '📈', prompt: `Cherche les news financières et économiques mondiales des dernières 24 heures. Couvre : marchés actions (S&P, CAC, DAX, TSX), crypto (BTC, ETH), macro-économie, banques centrales, taux d'intérêt, fonds de pension institutionnels (particulièrement Europe/Pays-Bas), et résultats d'entreprises notables. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"US/EU/Global/etc"}]}` },
+  { id: 'tech', label: 'Tech & IA', icon: '🤖', prompt: `Cherche les news tech et intelligence artificielle des dernières 24 heures. Couvre : nouveaux modèles d'IA, lancements de produits, startups notables, levées de fonds, Big Tech (Google, Apple, Meta, OpenAI, Anthropic, Mistral), réglementation tech, SaaS, outils pour développeurs. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"US/EU/Global/etc"}]}` },
+  { id: 'space', label: 'Space & Science', icon: '🚀', prompt: `Cherche les news spatiales et scientifiques des dernières 24 heures. Couvre : SpaceX, Blue Origin, NASA, ESA, lancements, découvertes astronomiques, physique, biologie, environnement, recherche médicale notable. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"US/EU/Global/etc"}]}` },
+  { id: 'geopolitics', label: 'Géopolitique', icon: '🌍', prompt: `Cherche les news géopolitiques et mondiales majeures des dernières 24 heures. Couvre : conflits internationaux, élections, diplomatie, relations USA-Chine-Europe-Russie, Canada (politique, économie), Belgique/UE, et faits divers mondiaux importants. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"US/EU/Global/etc"}]}` },
+  { id: 'pokemon', label: 'Pokémon TCG', icon: '⚡', prompt: `Cherche les news Pokémon TCG des dernières 48-72 heures. Couvre : nouvelles extensions, prix des cartes, tournois majeurs, annonces de The Pokémon Company, meta-game, bans. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"Global/JP/US/etc"}]}` },
+  { id: 'tennis', label: 'Tennis', icon: '🎾', prompt: `Cherche les news tennis des dernières 24 heures. Couvre : résultats de tournois en cours (ATP/WTA), Roland-Garros si en cours, classements, blessures notables, performances de Sinner, Alcaraz, Djokovic, Swiatek. Retourne un JSON valide avec ce format exact (rien d'autre, pas de markdown) : {"articles":[{"headline":"titre accrocheur","body":"paragraphe d'environ 60-80 mots résumant les faits essentiels et leur impact","source":"nom source","region":"ATP/WTA/Grand Slam/etc"}]}` }
+];
+
+let allArticles = {};
+let currentFilter = 'all';
+let isLoading = false;
+
+function saveKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    document.getElementById('key-status').textContent = '⚠ Format invalide';
+    return;
+  }
+  localStorage.setItem('mb_api_key', key);
+  document.getElementById('key-status').textContent = '✓ Sauvegardée';
+  document.getElementById('api-banner').style.background = '#2d6a2d';
+  setTimeout(() => { document.getElementById('api-banner').style.display = 'none'; }, 1500);
+}
+
+function getKey() {
+  return localStorage.getItem('mb_api_key') || '';
+}
+
+function updateDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('date-display').textContent = now.toLocaleDateString('fr-FR', opts);
+}
+
+function setStatus(state, message) {
+  const dot = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot ' + (state === 'live' ? 'live' : state === 'error' ? 'error' : '');
+  text.textContent = message;
+}
+
+function setLastUpdated() {
+  const now = new Date();
+  document.getElementById('last-updated').textContent = 'Mis à jour à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function filterTopic(topic) {
+  currentFilter = topic;
+  document.querySelectorAll('.topic-pill').forEach(p => p.classList.toggle('active', p.dataset.topic === topic));
+  renderSections();
+}
+
+function renderSkeleton() {
+  const main = document.getElementById('main-content');
+  let html = '';
+  TOPICS.forEach(t => {
+    html += `<section class="section visible" data-section="${t.id}"><div class="section-header"><span class="section-icon">${t.icon}</span><span class="section-title">${t.label}</span></div><div class="skeleton-grid">${[1,2,3].map(() => `<div class="skeleton-card"><div class="skeleton-line" style="width:40%;height:10px;"></div><div class="skeleton-line" style="width:85%;height:16px;margin-top:12px;"></div><div class="skeleton-line" style="width:70%;height:16px;"></div><div class="skeleton-line" style="width:95%;height:12px;margin-top:12px;"></div><div class="skeleton-line" style="width:90%;height:12px;"></div></div>`).join('')}</div></section>`;
+  });
+  main.innerHTML = html;
+}
+
+function renderSections() {
+  if (!Object.keys(allArticles).length) return;
+  const main = document.getElementById('main-content');
+  let html = '';
+  TOPICS.forEach(t => {
+    if (currentFilter !== 'all' && currentFilter !== t.id) return;
+    const articles = allArticles[t.id] || [];
+    html += `<section class="section visible" data-section="${t.id}"><div class="section-header"><span class="section-icon">${t.icon}</span><span class="section-title">${t.label}</span><span class="section-count">${articles.length} article${articles.length !== 1 ? 's' : ''}</span></div><div class="cards-grid">`;
+    if (!articles.length) {
+      html += `<div class="error-card"><strong>Aucune news trouvée</strong> pour ce thème.</div>`;
+    } else {
+      articles.forEach(a => {
+        html += `<div class="news-card"><div class="card-topic">${t.icon} ${escapeHtml(a.region||t.label)}</div><div class="card-headline">${escapeHtml(a.headline)}</div><div class="card-body">${escapeHtml(a.body)}</div><div class="card-source"><span>${escapeHtml(a.source||'Source inconnue')}</span></div></div>`;
+      });
+    }
+    html += `</div></section>`;
+  });
+  main.innerHTML = html || '<div class="empty-state"><div class="big-text">∅</div><p>Aucune section à afficher.</p></div>';
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+async function fetchTopic(topic, apiKey) {
+  try {
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-client": "true" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: topic.prompt }]
+      })
+    });
+    if (!response.ok) throw new Error('API error ' + response.status);
+    const data = await response.json();
+    let jsonText = '';
+    for (let i = data.content.length - 1; i >= 0; i--) {
+      if (data.content[i].type === 'text') { jsonText = data.content[i].text; break; }
+    }
+    jsonText = jsonText.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
+    const start = jsonText.indexOf('{');
+    const end = jsonText.lastIndexOf('}');
+    if (start !== -1 && end !== -1) jsonText = jsonText.slice(start, end+1);
+    const parsed = JSON.parse(jsonText);
+    return parsed.articles || [];
+  } catch(err) {
+    console.error(`Error fetching ${topic.id}:`, err);
+    return [];
+  }
+}
+
+async function fetchAllNews() {
+  if (isLoading) return;
+  const apiKey = getKey();
+  if (!apiKey) {
+    setStatus('error', '⚠ Entre ta clé API Anthropic dans la bannière rouge en haut');
+    return;
+  }
+  isLoading = true;
+  const btn = document.getElementById('refresh-btn');
+  btn.classList.add('loading');
+  btn.disabled = true;
+  document.getElementById('welcome-state')?.remove();
+  renderSkeleton();
+  setStatus('live', 'Recherche en cours sur 6 thèmes...');
+  allArticles = {};
+  let completed = 0;
+  await Promise.all(TOPICS.map(async (topic) => {
+    const articles = await fetchTopic(topic, apiKey);
+    allArticles[topic.id] = articles;
+    completed++;
+    setStatus('live', `Chargement... ${completed}/${TOPICS.length} thèmes récupérés`);
+    renderSections();
+  }));
+  setStatus('live', `Brief complet — ${Object.values(allArticles).flat().length} articles chargés`);
+  setLastUpdated();
+  btn.classList.remove('loading');
+  btn.disabled = false;
+  isLoading = false;
+}
+
+// Init
+updateDate();
+setInterval(updateDate, 60000);
+const savedKey = getKey();
+if (savedKey) {
+  document.getElementById('api-key-input').value = savedKey;
+  document.getElementById('api-banner').style.background = '#2d6a2d';
+  document.getElementById('key-status').textContent = '✓ Clé chargée';
+}
+</script>
+</body>
+</html>
