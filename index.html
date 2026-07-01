@@ -7,20 +7,27 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #0f0e0d; --paper: #f5f0e8; --cream: #ede8dc; --rule: #c8bfaa;
-    --accent: #b5360a; --muted: #7a7063; --tag-bg: #e8e0d0; --card-bg: #faf7f2;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+    --ink: #e8e2d9;
+    --paper: #0f0f0f;
+    --cream: #1a1a1a;
+    --rule: #2e2e2e;
+    --accent: #c0522a;
+    --muted: #6b6560;
+    --tag-bg: #1e1e1e;
+    --card-bg: #141414;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.3);
+    --border: #272727;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--paper); color: var(--ink); font-family: 'DM Sans', sans-serif; font-weight: 300; min-height: 100vh; }
   .masthead { border-bottom: 3px double var(--rule); padding: 28px 48px 20px; display: flex; justify-content: space-between; align-items: flex-end; background: var(--paper); }
-  .masthead-left .title { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+  .masthead-left .title { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; letter-spacing: -1px; line-height: 1; color: var(--ink); }
   .masthead-left .subtitle { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
   .masthead-right { text-align: right; }
   .date-display { font-family: 'Playfair Display', serif; font-size: 13px; font-style: italic; color: var(--muted); }
   .refresh-btn { margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; background: var(--ink); color: var(--paper); border: none; padding: 8px 18px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
-  .refresh-btn:hover { background: var(--accent); }
-  .refresh-btn:disabled { background: var(--rule); cursor: not-allowed; }
+  .refresh-btn:hover { background: var(--accent); color: #fff; }
+  .refresh-btn:disabled { background: var(--rule); color: var(--muted); cursor: not-allowed; }
   .refresh-btn .spinner { display: none; width: 10px; height: 10px; border: 1.5px solid var(--paper); border-top-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
   .refresh-btn.loading .spinner { display: block; }
   .refresh-btn.loading .btn-text { opacity: 0.6; }
@@ -29,7 +36,7 @@
   .topics-bar span { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
   .topic-pill { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; background: var(--tag-bg); color: var(--ink); border-radius: 2px; cursor: pointer; transition: all 0.15s; border: 1.5px solid transparent; user-select: none; }
   .topic-pill:hover { border-color: var(--rule); }
-  .topic-pill.active { background: var(--ink); color: var(--paper); }
+  .topic-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .status-bar { padding: 8px 48px; background: var(--cream); border-bottom: 1px solid var(--rule); font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
   .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--rule); margin-right: 6px; vertical-align: middle; }
   .status-dot.live { background: #4caf50; animation: pulse 2s ease-in-out infinite; }
@@ -39,28 +46,29 @@
   .section { margin-bottom: 48px; display: none; animation: fadeIn 0.4s ease; }
   .section.visible { display: block; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
-  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+  .section-header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--border); }
+  .section-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--ink); }
   .section-count { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--muted); margin-left: auto; }
   .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-  .news-card { background: var(--card-bg); border: 1px solid var(--rule); padding: 22px 24px; position: relative; transition: all 0.2s; }
-  .news-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+  .news-card { background: var(--card-bg); border: 1px solid var(--border); padding: 22px 24px; position: relative; transition: all 0.2s; }
+  .news-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: #3a3a3a; }
   .news-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: var(--rule); transition: background 0.2s; }
   .news-card:hover::before { background: var(--accent); }
   .card-topic { font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-  .card-headline { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 10px; }
-  .card-body { font-size: 13px; line-height: 1.65; color: #3d3830; font-weight: 300; }
-  .card-source { margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; border-top: 1px solid var(--cream); padding-top: 10px; }
+  .card-headline { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; line-height: 1.35; margin-bottom: 10px; color: var(--ink); }
+  .card-body { font-size: 13px; line-height: 1.65; color: #9a9088; font-weight: 300; }
+  .card-source { margin-top: 14px; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; border-top: 1px solid var(--rule); padding-top: 10px; }
   .skeleton-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-  .skeleton-card { background: var(--card-bg); border: 1px solid var(--rule); padding: 22px 24px; height: 180px; }
+  .skeleton-card { background: var(--card-bg); border: 1px solid var(--border); padding: 22px 24px; height: 180px; }
   .skeleton-line { background: linear-gradient(90deg, var(--cream) 25%, var(--rule) 50%, var(--cream) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 2px; margin-bottom: 10px; }
   @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
   .welcome { text-align: center; padding: 80px 20px; }
   .welcome .big-serif { font-family: 'Playfair Display', serif; font-size: 28px; font-style: italic; color: var(--muted); margin-bottom: 16px; }
   .welcome p { font-size: 14px; color: var(--muted); max-width: 400px; margin: 0 auto 28px; line-height: 1.6; }
-  .welcome-btn { background: var(--ink); color: var(--paper); border: none; padding: 12px 32px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; }
+  .welcome-btn { background: var(--accent); color: #fff; border: none; padding: 12px 32px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; transition: opacity 0.2s; }
+  .welcome-btn:hover { opacity: 0.85; }
   .footer { border-top: 3px double var(--rule); padding: 16px 48px; display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
-  .error-card { background: #fff8f6; border: 1px solid #e8c4b8; border-left: 3px solid var(--accent); padding: 16px 20px; font-size: 13px; color: #6b2d1a; grid-column: 1 / -1; }
+  .error-card { background: #1a1010; border: 1px solid #3a1a1a; border-left: 3px solid var(--accent); padding: 16px 20px; font-size: 13px; color: #a06050; grid-column: 1 / -1; }
   @media (max-width: 768px) {
     .masthead { padding: 20px; flex-direction: column; gap: 12px; align-items: flex-start; }
     .masthead-left .title { font-size: 36px; }
@@ -90,11 +98,11 @@
   <span>Filter —</span>
   <div class="topic-pill active" data-topic="all" onclick="filterTopic('all')">All</div>
   <div class="topic-pill" data-topic="finance" onclick="filterTopic('finance')">📈 Finance</div>
-  <div class="topic-pill" data-topic="tech" onclick="filterTopic('tech')">🤖 Tech & AI</div>
-  <div class="topic-pill" data-topic="space" onclick="filterTopic('space')">🚀 Space & Science</div>
-  <div class="topic-pill" data-topic="geopolitics" onclick="filterTopic('geopolitics')">🌍 Géopolitique</div>
-  <div class="topic-pill" data-topic="pokemon" onclick="filterTopic('pokemon')">⚡ Pokémon TCG</div>
-  <div class="topic-pill" data-topic="tennis" onclick="filterTopic('tennis')">🎾 Tennis</div>
+  <div class="topic-pill" data-topic="deals" onclick="filterTopic('deals')">🤝 Deals & M&A</div>
+  <div class="topic-pill" data-topic="ai" onclick="filterTopic('ai')">🤖 Pure IA</div>
+  <div class="topic-pill" data-topic="science" onclick="filterTopic('science')">🔬 Science</div>
+  <div class="topic-pill" data-topic="wars" onclick="filterTopic('wars')">🌍 Wars & Conflicts</div>
+  <div class="topic-pill" data-topic="sports" onclick="filterTopic('sports')">🏆 Sports</div>
 </nav>
 
 <div class="status-bar">
@@ -105,7 +113,7 @@
 <main class="content" id="main-content">
   <div class="welcome" id="welcome-state">
     <div class="big-serif">"Stay informed, stay ahead."</div>
-    <p>Ton digest personnalisé du matin — Finance, Tech & IA, Space, Géopolitique, Pokémon TCG et Tennis.</p>
+    <p>Finance, Deals & M&A, Pure IA, Science, Conflits mondiaux, Sports — ton brief du matin en un clic.</p>
     <button class="welcome-btn" onclick="fetchAllNews()">Charger mon brief →</button>
   </div>
 </main>
@@ -118,24 +126,53 @@
 <script>
 const PROXY_URL = "https://morning-brief-proxy.alexisketelaer1.workers.dev/";
 
-const SYSTEM_PROMPT = `You are a news summarizer. Given a list of RSS headlines and descriptions, summarize them into clean French summaries.
-You MUST respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks. Only raw JSON.
-Format: {"articles":[{"headline":"titre court max 10 mots","body":"resume 50-70 mots en francais","source":"nom source","region":"US/EU/Global/JP/ATP/WTA"}]}
+const SYSTEM_PROMPT = `You are a news summarizer. Given RSS headlines and descriptions, summarize into concise French summaries.
+Respond with ONLY a valid JSON object. No markdown, no code blocks, no explanation.
+Format: {"articles":[{"headline":"titre court max 10 mots","body":"resume 50-70 mots en francais","source":"nom source","region":"US/EU/Global/etc"}]}
 Rules:
 - Write in French
-- headline: max 10 words, no special quotes
-- body: 50-70 words, simple ASCII only, no quotes inside strings
+- headline: max 10 words, no special characters or quotes inside
+- body: 50-70 words, plain ASCII only, no double quotes inside strings
 - Return max 3 articles
-- NEVER use double quotes inside string values`;
+- Never use double quotes inside string values, rephrase instead`;
 
 const TOPICS = [
-  { id: 'finance',     label: 'Finance & Marchés', icon: '📈' },
-  { id: 'tech',        label: 'Tech & IA',          icon: '🤖' },
-  { id: 'space',       label: 'Space & Science',    icon: '🚀' },
-  { id: 'geopolitics', label: 'Géopolitique',       icon: '🌍' },
-  { id: 'pokemon',     label: 'Pokémon TCG',        icon: '⚡' },
-  { id: 'tennis',      label: 'Tennis',             icon: '🎾' },
+  { id: 'finance', label: 'Finance & Marchés', icon: '📈', useWebSearch: false,
+    prompt: 'Search top 3 finance and markets news last 24h. Cover stocks S&P TSX CAC, crypto, macro, central banks, institutional investors. JSON only.' },
+  { id: 'deals', label: 'Deals & M&A', icon: '🤝', useWebSearch: true,
+    prompt: 'Search top 3 mergers acquisitions deals news last 24h. Cover major M&A, private equity, IPOs, buyouts, venture capital rounds above 100M. JSON only.' },
+  { id: 'ai', label: 'Pure IA', icon: '🤖', useWebSearch: true,
+    prompt: 'Search top 3 artificial intelligence news last 24h. Cover new AI models releases, OpenAI Anthropic Google Mistral Meta AI, research breakthroughs, AI regulation. JSON only.' },
+  { id: 'science', label: 'Science', icon: '🔬', useWebSearch: false,
+    prompt: 'Search top 3 science news last 24h. Cover space NASA SpaceX ESA, medical research, physics biology environment climate, discoveries. JSON only.' },
+  { id: 'wars', label: 'Wars & Conflicts', icon: '🌍', useWebSearch: false,
+    prompt: 'Search top 3 wars conflicts geopolitics news last 24h. Cover active conflicts Ukraine Middle East Asia, diplomacy, elections, international tensions. JSON only.' },
+  { id: 'sports', label: 'Sports', icon: '🏆', useWebSearch: false,
+    prompt: 'Search top 3 sports news last 24h. Cover tennis ATP WTA, F1 Formula One, NHL, football soccer, major results and standings. JSON only.' },
 ];
+
+const RSS_FEEDS = {
+  finance: [
+    'https://feeds.reuters.com/reuters/businessNews',
+    'https://feeds.bbci.co.uk/news/business/rss.xml',
+    'https://rss.nytimes.com/services/xml/rss/nyt/Business.xml',
+  ],
+  science: [
+    'https://www.nasa.gov/rss/dyn/breaking_news.rss',
+    'https://spacenews.com/feed/',
+    'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml',
+  ],
+  wars: [
+    'https://feeds.bbci.co.uk/news/world/rss.xml',
+    'https://feeds.reuters.com/Reuters/worldNews',
+    'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
+  ],
+  sports: [
+    'https://feeds.bbci.co.uk/sport/rss.xml',
+    'https://feeds.reuters.com/reuters/sportsNews',
+    'https://www.espn.com/espn/rss/news',
+  ],
+};
 
 let allArticles = {};
 let currentFilter = 'all';
@@ -231,8 +268,7 @@ function safeParseArticles(text) {
     return Array.isArray(parsed.articles) ? parsed.articles : [];
   } catch(e) {
     const articles = [];
-    const articleRegex = /\{[^{}]*"headline"[^{}]*"body"[^{}]*\}/g;
-    const matches = text.match(articleRegex) || [];
+    const matches = text.match(/\{[^{}]*"headline"[^{}]*"body"[^{}]*\}/g) || [];
     for (const m of matches) {
       try { const a = JSON.parse(m); if (a.headline && a.body) articles.push(a); } catch(e2) {
         const h = m.match(/"headline"\s*:\s*"([^"]+)"/);
@@ -246,21 +282,16 @@ function safeParseArticles(text) {
   }
 }
 
-async function fetchTopic(topic) {
+async function fetchTopicRSS(topic) {
   try {
-    // Step 1: fetch RSS items via worker (free)
     const rssRes = await fetch(`${PROXY_URL}rss?topic=${topic.id}`);
     if (!rssRes.ok) return [];
     const rssData = await rssRes.json();
     const items = rssData.items || [];
     if (!items.length) return [];
 
-    // Build a compact input for Claude
-    const newsText = items.map((it, i) =>
-      `[${i+1}] ${it.source}: ${it.title}. ${it.desc}`
-    ).join('\n');
+    const newsText = items.map((it, i) => `[${i+1}] ${it.source}: ${it.title}. ${it.desc}`).join('\n');
 
-    // Step 2: ask Claude to summarize (cheap — no web search)
     const claudeRes = await fetch(PROXY_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
@@ -268,20 +299,14 @@ async function fetchTopic(topic) {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 800,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: `Summarize these news items into French:\n${newsText}` }]
+        messages: [{ role: 'user', content: `Summarize these news into French JSON:\n${newsText}` }]
       })
     });
 
     if (!claudeRes.ok) {
       const err = await claudeRes.text();
       console.error('Claude error', claudeRes.status, err);
-      // Fallback: show raw RSS items without Claude summarization
-      return items.slice(0, 3).map(it => ({
-        headline: it.title,
-        body: it.desc || 'Pas de description disponible.',
-        source: it.source,
-        region: 'Global'
-      }));
+      return items.slice(0,3).map(it => ({ headline: it.title, body: it.desc || it.title, source: it.source, region: 'Global' }));
     }
 
     const data = await claudeRes.json();
@@ -290,19 +315,42 @@ async function fetchTopic(topic) {
       if (data.content[i].type === 'text') { jsonText = data.content[i].text; break; }
     }
     const articles = safeParseArticles(jsonText);
-
-    // If Claude parse fails, show raw RSS
-    if (!articles.length) {
-      return items.slice(0, 3).map(it => ({
-        headline: it.title,
-        body: it.desc || '',
-        source: it.source,
-        region: 'Global'
-      }));
-    }
+    if (!articles.length) return items.slice(0,3).map(it => ({ headline: it.title, body: it.desc || it.title, source: it.source, region: 'Global' }));
     return articles;
   } catch(err) {
-    console.error('fetchTopic error', topic.id, err);
+    console.error('fetchTopicRSS error', topic.id, err);
+    return [];
+  }
+}
+
+async function fetchTopicWebSearch(topic) {
+  try {
+    const claudeRes = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: topic.prompt }]
+      })
+    });
+
+    if (!claudeRes.ok) {
+      const err = await claudeRes.text();
+      console.error('Claude web search error', claudeRes.status, err);
+      return [];
+    }
+
+    const data = await claudeRes.json();
+    let jsonText = '';
+    for (let i = data.content.length - 1; i >= 0; i--) {
+      if (data.content[i].type === 'text') { jsonText = data.content[i].text; break; }
+    }
+    return safeParseArticles(jsonText);
+  } catch(err) {
+    console.error('fetchTopicWebSearch error', topic.id, err);
     return [];
   }
 }
@@ -314,11 +362,13 @@ async function fetchAllNews() {
   btn.classList.add('loading'); btn.disabled = true;
   document.getElementById('welcome-state')?.remove();
   renderSkeleton();
-  setStatus('live', 'Chargement des flux RSS...');
+  setStatus('live', 'Chargement...');
   allArticles = {};
   let completed = 0;
   await Promise.all(TOPICS.map(async (topic) => {
-    const articles = await fetchTopic(topic);
+    const articles = topic.useWebSearch
+      ? await fetchTopicWebSearch(topic)
+      : await fetchTopicRSS(topic);
     allArticles[topic.id] = articles;
     completed++;
     setStatus('live', `${completed}/${TOPICS.length} thèmes chargés...`);
