@@ -2,7 +2,7 @@ name: Morning Brief Email
 
 on:
   schedule:
-    - cron: '0 11 * * *'  # 7h AM Toronto (UTC-4)
+    - cron: '55 11 * * *'  # 7h55 AM Toronto (UTC-4)
   workflow_dispatch:  # permet de tester manuellement
 
 jobs:
