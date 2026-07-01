@@ -140,7 +140,7 @@ const TOPICS = [
   { id: 'finance', label: 'Finance & Marchés', icon: '📈', useWebSearch: false,
     prompt: 'Search top 3 finance and markets news last 24h. Cover stocks S&P TSX CAC, crypto, macro, central banks, institutional investors. JSON only.' },
   { id: 'deals', label: 'Deals & M&A', icon: '🤝', useWebSearch: true,
-    prompt: 'Search top 3 mergers acquisitions deals news last 24h. Cover major M&A, private equity, IPOs, buyouts, venture capital rounds above 100M. JSON only.' },
+    prompt: 'Search top 3 mergers acquisitions deals news last 24h. Cover major M&A, private equity, IPOs, buyouts, venture capital rounds above 100M. For each deal: headline must mention the industry sector (not just company names), body must explain what sector is affected, why this deal matters strategically, and what it signals for the industry in 1-2 sentences. JSON only.' },
   { id: 'ai', label: 'Pure IA', icon: '🤖', useWebSearch: true,
     prompt: 'Search top 3 artificial intelligence news last 24h. Cover new AI models releases, OpenAI Anthropic Google Mistral Meta AI, research breakthroughs, AI regulation. JSON only.' },
   { id: 'science', label: 'Science', icon: '🔬', useWebSearch: false,
