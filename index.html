@@ -61,27 +61,16 @@
   .welcome-btn { background: var(--ink); color: var(--paper); border: none; padding: 12px 32px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; }
   .footer { border-top: 3px double var(--rule); padding: 16px 48px; display: flex; justify-content: space-between; font-family: 'DM Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; }
   .error-card { background: #fff8f6; border: 1px solid #e8c4b8; border-left: 3px solid var(--accent); padding: 16px 20px; font-size: 13px; color: #6b2d1a; grid-column: 1 / -1; }
-  .api-key-banner { background: var(--accent); color: var(--paper); padding: 12px 48px; font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 1px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .api-key-banner input { flex: 1; min-width: 200px; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: var(--paper); padding: 6px 10px; font-family: 'DM Mono', monospace; font-size: 11px; outline: none; }
-  .api-key-banner input::placeholder { color: rgba(255,255,255,0.5); }
-  .api-key-banner button { background: var(--paper); color: var(--accent); border: none; padding: 6px 14px; font-family: 'DM Mono', monospace; font-size: 10px; cursor: pointer; font-weight: 500; }
   @media (max-width: 768px) {
     .masthead { padding: 20px; flex-direction: column; gap: 12px; align-items: flex-start; }
     .masthead-left .title { font-size: 36px; }
     .masthead-right { text-align: left; }
-    .topics-bar, .status-bar, .content, .footer, .api-key-banner { padding-left: 20px; padding-right: 20px; }
+    .topics-bar, .status-bar, .content, .footer { padding-left: 20px; padding-right: 20px; }
     .cards-grid, .skeleton-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
-
-<div class="api-key-banner" id="api-banner">
-  <span>🔑 CLÉ API —</span>
-  <input type="password" id="api-key-input" placeholder="sk-ant-..." />
-  <button onclick="saveKey()">Sauvegarder</button>
-  <span id="key-status"></span>
-</div>
 
 <header class="masthead">
   <div class="masthead-left">
@@ -109,71 +98,53 @@
 </nav>
 
 <div class="status-bar">
-  <div><span class="status-dot" id="status-dot"></span><span id="status-text">Prêt — entre ta clé API puis clique sur Fetch</span></div>
+  <div><span class="status-dot" id="status-dot"></span><span id="status-text">Prêt — clique sur Fetch Today's Brief</span></div>
   <div id="last-updated"></div>
 </div>
 
 <main class="content" id="main-content">
   <div class="welcome" id="welcome-state">
     <div class="big-serif">"Stay informed, stay ahead."</div>
-    <p>Entre ta clé API Anthropic dans la bannière rouge en haut, puis lance ton brief du matin.</p>
+    <p>Ton digest personnalisé du matin — Finance, Tech & IA, Space, Géopolitique, Pokémon TCG et Tennis.</p>
     <button class="welcome-btn" onclick="fetchAllNews()">Charger mon brief →</button>
   </div>
 </main>
 
 <footer class="footer">
-  <span>Morning Brief · Powered by Claude</span>
+  <span>Morning Brief · Powered by Claude + RSS</span>
   <span>Sources mondiales · Résumés en français</span>
 </footer>
 
 <script>
 const PROXY_URL = "https://morning-brief-proxy.alexisketelaer1.workers.dev/";
 
-const SYSTEM_PROMPT = `You are a news aggregator. You MUST respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks. Only raw JSON.
-The JSON must follow this exact structure:
-{"articles":[{"headline":"string","body":"string","source":"string","region":"string"}]}
+const SYSTEM_PROMPT = `You are a news summarizer. Given a list of RSS headlines and descriptions, summarize them into clean French summaries.
+You MUST respond with ONLY a valid JSON object. No explanations, no markdown, no code blocks. Only raw JSON.
+Format: {"articles":[{"headline":"titre court max 10 mots","body":"resume 50-70 mots en francais","source":"nom source","region":"US/EU/Global/JP/ATP/WTA"}]}
 Rules:
-- headline: short punchy title, max 10 words, no quotes inside
-- body: 60-80 words summary, no quotes inside, use simple ASCII only
-- source: publication name only
-- region: one of US, EU, Global, JP, ATP, WTA
-- Return 3 articles maximum
-- NEVER use double quotes inside string values, use single quotes or rephrase
-- NEVER include newlines inside strings`;
+- Write in French
+- headline: max 10 words, no special quotes
+- body: 50-70 words, simple ASCII only, no quotes inside strings
+- Return max 3 articles
+- NEVER use double quotes inside string values`;
 
 const TOPICS = [
-  { id: 'finance', label: 'Finance & Marchés', icon: '📈',
-    prompt: 'Search for the top 3 financial news from the last 24 hours. Cover stock markets, crypto, macro economy, central banks. Return JSON only.' },
-  { id: 'tech', label: 'Tech & IA', icon: '🤖',
-    prompt: 'Search for the top 3 tech and AI news from the last 24 hours. Cover new AI models, startups, Big Tech, SaaS. Return JSON only.' },
-  { id: 'space', label: 'Space & Science', icon: '🚀',
-    prompt: 'Search for the top 3 space and science news from the last 24 hours. Cover SpaceX, NASA, ESA, discoveries. Return JSON only.' },
-  { id: 'geopolitics', label: 'Géopolitique', icon: '🌍',
-    prompt: 'Search for the top 3 geopolitics news from the last 24 hours. Cover international conflicts, diplomacy, elections, Canada, EU. Return JSON only.' },
-  { id: 'pokemon', label: 'Pokémon TCG', icon: '⚡',
-    prompt: 'Search for the top 3 Pokemon TCG news from the last 72 hours. Cover new sets, card prices, tournaments. Return JSON only.' },
-  { id: 'tennis', label: 'Tennis', icon: '🎾',
-    prompt: 'Search for the top 3 tennis news from the last 24 hours. Cover ATP WTA results, Roland Garros if ongoing, Sinner Alcaraz Djokovic Swiatek. Return JSON only.' }
+  { id: 'finance',     label: 'Finance & Marchés', icon: '📈' },
+  { id: 'tech',        label: 'Tech & IA',          icon: '🤖' },
+  { id: 'space',       label: 'Space & Science',    icon: '🚀' },
+  { id: 'geopolitics', label: 'Géopolitique',       icon: '🌍' },
+  { id: 'pokemon',     label: 'Pokémon TCG',        icon: '⚡' },
+  { id: 'tennis',      label: 'Tennis',             icon: '🎾' },
 ];
 
 let allArticles = {};
 let currentFilter = 'all';
 let isLoading = false;
 
-function saveKey() {
-  const key = document.getElementById('api-key-input').value.trim();
-  if (!key.startsWith('sk-ant-')) { document.getElementById('key-status').textContent = '⚠ Format invalide'; return; }
-  localStorage.setItem('mb_api_key', key);
-  document.getElementById('key-status').textContent = '✓ Sauvegardée';
-  document.getElementById('api-banner').style.background = '#2d6a2d';
-  setTimeout(() => { document.getElementById('api-banner').style.display = 'none'; }, 1500);
-}
-
-function getKey() { return localStorage.getItem('mb_api_key') || ''; }
-
 function updateDate() {
   const now = new Date();
-  document.getElementById('date-display').textContent = now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('date-display').textContent =
+    now.toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 function setStatus(state, message) {
@@ -183,7 +154,8 @@ function setStatus(state, message) {
 
 function setLastUpdated() {
   const now = new Date();
-  document.getElementById('last-updated').textContent = 'Mis à jour à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('last-updated').textContent =
+    'Mis à jour à ' + now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 }
 
 function filterTopic(topic) {
@@ -192,17 +164,28 @@ function filterTopic(topic) {
   renderSections();
 }
 
-function renderSkeleton() {
-  let html = '';
-  TOPICS.forEach(t => {
-    html += `<section class="section visible"><div class="section-header"><span>${t.icon}</span><span class="section-title">${t.label}</span></div><div class="skeleton-grid">${[1,2,3].map(() => `<div class="skeleton-card"><div class="skeleton-line" style="width:40%;height:10px"></div><div class="skeleton-line" style="width:85%;height:16px;margin-top:12px"></div><div class="skeleton-line" style="width:70%;height:16px"></div><div class="skeleton-line" style="width:95%;height:12px;margin-top:12px"></div><div class="skeleton-line" style="width:80%;height:12px"></div></div>`).join('')}</div></section>`;
-  });
-  document.getElementById('main-content').innerHTML = html;
-}
-
 function escapeHtml(str) {
   if (!str) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderSkeleton() {
+  let html = '';
+  TOPICS.forEach(t => {
+    html += `<section class="section visible">
+      <div class="section-header"><span>${t.icon}</span><span class="section-title">${t.label}</span></div>
+      <div class="skeleton-grid">${[1,2,3].map(() => `
+        <div class="skeleton-card">
+          <div class="skeleton-line" style="width:40%;height:10px"></div>
+          <div class="skeleton-line" style="width:85%;height:16px;margin-top:12px"></div>
+          <div class="skeleton-line" style="width:70%;height:16px"></div>
+          <div class="skeleton-line" style="width:95%;height:12px;margin-top:12px"></div>
+          <div class="skeleton-line" style="width:80%;height:12px"></div>
+        </div>`).join('')}
+      </div>
+    </section>`;
+  });
+  document.getElementById('main-content').innerHTML = html;
 }
 
 function renderSections() {
@@ -211,83 +194,113 @@ function renderSections() {
   TOPICS.forEach(t => {
     if (currentFilter !== 'all' && currentFilter !== t.id) return;
     const articles = allArticles[t.id] || [];
-    html += `<section class="section visible"><div class="section-header"><span>${t.icon}</span><span class="section-title">${t.label}</span><span class="section-count">${articles.length} article${articles.length !== 1 ? 's' : ''}</span></div><div class="cards-grid">`;
+    html += `<section class="section visible">
+      <div class="section-header">
+        <span>${t.icon}</span>
+        <span class="section-title">${t.label}</span>
+        <span class="section-count">${articles.length} article${articles.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="cards-grid">`;
     if (!articles.length) {
       html += `<div class="error-card">Aucune news trouvée pour ce thème.</div>`;
     } else {
       articles.forEach(a => {
-        html += `<div class="news-card"><div class="card-topic">${t.icon} ${escapeHtml(a.region||'')}</div><div class="card-headline">${escapeHtml(a.headline)}</div><div class="card-body">${escapeHtml(a.body)}</div><div class="card-source">${escapeHtml(a.source||'')}</div></div>`;
+        html += `<div class="news-card">
+          <div class="card-topic">${t.icon} ${escapeHtml(a.region||'')}</div>
+          <div class="card-headline">${escapeHtml(a.headline)}</div>
+          <div class="card-body">${escapeHtml(a.body)}</div>
+          <div class="card-source">${escapeHtml(a.source||'')}</div>
+        </div>`;
       });
     }
     html += `</div></section>`;
   });
-  document.getElementById('main-content').innerHTML = html || '<div style="text-align:center;padding:60px;color:var(--muted)">Aucune section.</div>';
+  document.getElementById('main-content').innerHTML = html ||
+    '<div style="text-align:center;padding:60px;color:var(--muted)">Aucune section.</div>';
 }
 
 function safeParseArticles(text) {
-  // Remove markdown fences
   text = text.replace(/```json\s*/gi,'').replace(/```\s*/gi,'').trim();
-  // Find outermost JSON object
   const start = text.indexOf('{');
   const end = text.lastIndexOf('}');
   if (start === -1 || end === -1) return [];
   text = text.slice(start, end + 1);
-  // Fix common issues: replace smart quotes
-  text = text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '\\"');
+  text = text.replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'\\"');
   try {
     const parsed = JSON.parse(text);
     return Array.isArray(parsed.articles) ? parsed.articles : [];
   } catch(e) {
-    // Try to extract articles manually using regex
     const articles = [];
     const articleRegex = /\{[^{}]*"headline"[^{}]*"body"[^{}]*\}/g;
     const matches = text.match(articleRegex) || [];
-    for (const match of matches) {
-      try {
-        const a = JSON.parse(match);
-        if (a.headline && a.body) articles.push(a);
-      } catch(e2) {
-        // Try to extract fields manually
-        const h = match.match(/"headline"\s*:\s*"([^"]+)"/);
-        const b = match.match(/"body"\s*:\s*"([^"]+)"/);
-        const s = match.match(/"source"\s*:\s*"([^"]+)"/);
-        const r = match.match(/"region"\s*:\s*"([^"]+)"/);
-        if (h && b) articles.push({ headline: h[1], body: b[1], source: s ? s[1] : '', region: r ? r[1] : '' });
+    for (const m of matches) {
+      try { const a = JSON.parse(m); if (a.headline && a.body) articles.push(a); } catch(e2) {
+        const h = m.match(/"headline"\s*:\s*"([^"]+)"/);
+        const b = m.match(/"body"\s*:\s*"([^"]+)"/);
+        const s = m.match(/"source"\s*:\s*"([^"]+)"/);
+        const r = m.match(/"region"\s*:\s*"([^"]+)"/);
+        if (h && b) articles.push({ headline: h[1], body: b[1], source: s?s[1]:'', region: r?r[1]:'' });
       }
     }
     return articles;
   }
 }
 
-async function fetchTopic(topic, apiKey) {
+async function fetchTopic(topic) {
   try {
-    const response = await fetch(PROXY_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01"
-      },
+    // Step 1: fetch RSS items via worker (free)
+    const rssRes = await fetch(`${PROXY_URL}rss?topic=${topic.id}`);
+    if (!rssRes.ok) return [];
+    const rssData = await rssRes.json();
+    const items = rssData.items || [];
+    if (!items.length) return [];
+
+    // Build a compact input for Claude
+    const newsText = items.map((it, i) =>
+      `[${i+1}] ${it.source}: ${it.title}. ${it.desc}`
+    ).join('\n');
+
+    // Step 2: ask Claude to summarize (cheap — no web search)
+    const claudeRes = await fetch(PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
-        model: "claude-haiku-4-5-20251001",
-        max_tokens: 1000,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
         system: SYSTEM_PROMPT,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: [{ role: "user", content: topic.prompt }]
+        messages: [{ role: 'user', content: `Summarize these news items into French:\n${newsText}` }]
       })
     });
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('API error', response.status, errText);
-      return [];
+
+    if (!claudeRes.ok) {
+      const err = await claudeRes.text();
+      console.error('Claude error', claudeRes.status, err);
+      // Fallback: show raw RSS items without Claude summarization
+      return items.slice(0, 3).map(it => ({
+        headline: it.title,
+        body: it.desc || 'Pas de description disponible.',
+        source: it.source,
+        region: 'Global'
+      }));
     }
-    const data = await response.json();
-    // Find last text block
+
+    const data = await claudeRes.json();
     let jsonText = '';
     for (let i = data.content.length - 1; i >= 0; i--) {
       if (data.content[i].type === 'text') { jsonText = data.content[i].text; break; }
     }
-    return safeParseArticles(jsonText);
+    const articles = safeParseArticles(jsonText);
+
+    // If Claude parse fails, show raw RSS
+    if (!articles.length) {
+      return items.slice(0, 3).map(it => ({
+        headline: it.title,
+        body: it.desc || '',
+        source: it.source,
+        region: 'Global'
+      }));
+    }
+    return articles;
   } catch(err) {
     console.error('fetchTopic error', topic.id, err);
     return [];
@@ -296,18 +309,16 @@ async function fetchTopic(topic, apiKey) {
 
 async function fetchAllNews() {
   if (isLoading) return;
-  const apiKey = getKey();
-  if (!apiKey) { setStatus('error', '⚠ Entre ta clé API dans la bannière rouge'); return; }
   isLoading = true;
   const btn = document.getElementById('refresh-btn');
   btn.classList.add('loading'); btn.disabled = true;
   document.getElementById('welcome-state')?.remove();
   renderSkeleton();
-  setStatus('live', 'Recherche en cours...');
+  setStatus('live', 'Chargement des flux RSS...');
   allArticles = {};
   let completed = 0;
   await Promise.all(TOPICS.map(async (topic) => {
-    const articles = await fetchTopic(topic, apiKey);
+    const articles = await fetchTopic(topic);
     allArticles[topic.id] = articles;
     completed++;
     setStatus('live', `${completed}/${TOPICS.length} thèmes chargés...`);
@@ -320,15 +331,8 @@ async function fetchAllNews() {
   isLoading = false;
 }
 
-// Init
 updateDate();
 setInterval(updateDate, 60000);
-const savedKey = getKey();
-if (savedKey) {
-  document.getElementById('api-key-input').value = savedKey;
-  document.getElementById('api-banner').style.background = '#2d6a2d';
-  document.getElementById('key-status').textContent = '✓ Clé chargée';
-}
 </script>
 </body>
 </html>
