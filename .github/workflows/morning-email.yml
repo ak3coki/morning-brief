@@ -17,6 +17,6 @@ jobs:
             -d '{
               "from": "onboarding@resend.dev",
               "to": "alexisketelaer1@gmail.com",
-              "subject": "☀️ Morning Brief — '"$(date +'%A %d %B %Y')"'",
+              "subject": "☀️ Ton Morning Brief — '"$(date +'%A %d %B %Y')"'",
               "html": "<div style=\"font-family: Georgia, serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; background: #0f0f0f; color: #e8e2d9;\"><h1 style=\"font-size: 36px; font-weight: 900; margin: 0 0 8px;\">Morning Brief</h1><p style=\"font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: #6b6560; margin: 0 0 32px;\">YOUR CURATED INTELLIGENCE DIGEST</p><p style=\"font-size: 15px; color: #9a9088; line-height: 1.6; margin: 0 0 32px;\">Ton brief du matin est prêt. Finance, Deals & M&A, Pure IA, Science, Conflits mondiaux et Sports.</p><a href=\"https://ak3coki.github.io/morning-brief\" style=\"display: inline-block; background: #c0522a; color: #ffffff; text-decoration: none; padding: 14px 32px; font-family: monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase;\">→ Ouvrir mon brief</a><p style=\"font-size: 10px; color: #3a3a3a; margin: 40px 0 0;\">Morning Brief · Envoyé automatiquement chaque matin</p></div>"
             }'
